@@ -27,6 +27,7 @@ public class UserServiceImpl implements IUserService{
         if (resultCount == 0){
             return ServerResponse.createByErrorMessage("用户不存在");
         }
+
         //// TODO: 2019/1/23 密码登陆md5
         User user = userMapper.selectLogin(username, password);
         if(user == null){
