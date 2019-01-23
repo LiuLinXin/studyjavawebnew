@@ -37,6 +37,7 @@ public class UserServiceImpl implements IUserService{
         return ServerResponse.createBySuccessMessage("登陆成功", user);
     }
 
+
     public ServerResponse<String> regist(User user){
         int resultCount1 = userMapper.checkUserName(user.getUsername());
         if (resultCount1 > 0){
