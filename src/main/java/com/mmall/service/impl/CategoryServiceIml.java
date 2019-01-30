@@ -1,5 +1,7 @@
 package com.mmall.service.impl;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.mmall.common.ServerResponse;
 import com.mmall.dao.CategoryMapper;
 import com.mmall.pojo.Category;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by philer on 2019/1/24.
@@ -40,12 +43,47 @@ public class CategoryServiceIml {
         return ServerResponse.createByErrorMessage("添加品类失败");
     }
 
-    public ServerResponse getChildrenParallelCategory(Integer categoryId){
+    public ServerResponse<List<Category>> getChildrenParallelCategory(Integer categoryId){
         List<Category> categories = categoryMapper.selectCategoryChildrenByParentId(categoryId);
         if(CollectionUtils.isEmpty(categories)){
             logger.info("未找到当前分类的子类");
         }
         return ServerResponse.createBySuccessMessage(categories);
     }
+
+    /**
+     * 递归查询本节点的id及孩子节点的id
+     * @param categoryId
+     * @return
+     */
+    public ServerResponse<List<Integer>> selectCategoryAndChildrenById(Integer categoryId){
+        Set<Category> categorySet = Sets.newHashSet();
+        findChildCategory(categorySet,categoryId);
+
+
+        List<Integer> categoryIdList = Lists.newArrayList();
+        if(categoryId != null){
+            for(Category categoryItem : categorySet){
+                categoryIdList.add(categoryItem.getId());
+            }
+        }
+        return ServerResponse.createBySuccessMessage(categoryIdList);
+    }
+
+
+    //递归算法,算出子节点
+    private Set<Category> findChildCategory(Set<Category> categorySet ,Integer categoryId){
+        Category category = categoryMapper.selectByPrimaryKey(categoryId);
+        if(category != null){
+            categorySet.add(category);
+        }
+        //查找子节点,递归算法一定要有一个退出的条件
+        List<Category> categoryList = categoryMapper.selectCategoryChildrenByParentId(categoryId);
+        for(Category categoryItem : categoryList){
+            findChildCategory(categorySet,categoryItem.getId());
+        }
+        return categorySet;
+    }
+
 
 }
